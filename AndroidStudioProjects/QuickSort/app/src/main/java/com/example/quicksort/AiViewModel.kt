@@ -1,5 +1,6 @@
 package com.example.quicksort
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -42,20 +43,22 @@ class AiViewModel : ViewModel() {
     /**
      * 1단계: 사진 분석 및 법령 조회 (화면 표시용)
      * Storage 업로드 → AI 분석 → 가이드 검색
+     * 업로드 성공 시 에뮬레이터의 임시 파일 자동 삭제
      *
      * @param userId 사용자 ID (Storage 폴더 구분용)
      * @param imageUri 촬영한 이미지의 로컬 URI
+     * @param context Context (임시 파일 삭제용)
      * @param onResult 결과 콜백 (category, detail, guide, points)
      */
-    fun analyzeRecycling(userId: String, imageUri: Uri, onResult: (RecyclingResult?) -> Unit) {
+    fun analyzeRecycling(userId: String, imageUri: Uri, context: Context, onResult: (RecyclingResult?) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
 
             try {
-                // 1. Firebase Storage에 이미지 업로드
+                // 1. Firebase Storage에 이미지 업로드 (업로드 후 자동으로 로컬 임시 파일 삭제)
                 Log.d("RECYCLING", "이미지 업로드 중...")
-                val uploadResult = storageRepo.uploadImage(imageUri, userId)
+                val uploadResult = storageRepo.uploadImage(imageUri, userId, context)
 
                 if (uploadResult.isFailure) {
                     _errorMessage.value = "이미지 업로드 실패: ${uploadResult.exceptionOrNull()?.message}"
@@ -156,7 +159,7 @@ class AiViewModel : ViewModel() {
     }
 
     /**
-     * 사용자가 저장 안 할 경우 업로드한 이미지 삭제
+     * 사용자가 저장 안 할 경우 업로드한 이미지 삭제 (저장 안함 버튼)
      */
     fun cancelAndDeleteImage(imageUrl: String) {
         viewModelScope.launch {
@@ -170,7 +173,7 @@ class AiViewModel : ViewModel() {
     }
 
     /**
-     * 사용자의 분리수거 기록 가져오기 (갤러리용)
+     * 사용자의 분리수거 기록 가져오기 (갤러리용) -> 프론트에서 coil라이브러리로 인스타그램처럼 사진 3분할로 보여주면 좋을듯.
      */
     fun getUserHistory(userId: String, onResult: (List<TrashHistory>) -> Unit) {
         viewModelScope.launch {
@@ -185,7 +188,7 @@ class AiViewModel : ViewModel() {
     }
 
     /**
-     * 랭킹 가져오기
+     * 랭킹 가져오기 (분리수거 점수로 정렬한 결과 반환)
      */
     fun getRanking(limit: Int = 10, onResult: (List<User>) -> Unit) {
         viewModelScope.launch {
@@ -200,7 +203,7 @@ class AiViewModel : ViewModel() {
     }
 
     /**
-     * 사용자 정보 가져오기
+     * 사용자 정보 가져오기 -> 개인정보 프로필 화면이 있다면 사용. ex) 로그인 후 홈 화면
      */
     fun getUserInfo(userId: String, onResult: (User) -> Unit) {
         viewModelScope.launch {
@@ -215,7 +218,7 @@ class AiViewModel : ViewModel() {
     }
 
     /**
-     * 내 순위 가져오기
+     * 내 순위 가져오기 -> 프로필 화면에서 내 순위 표시. , 전체 랭킹 화면에서 내 순위 강조 표시
      */
     fun getMyRank(userId: String, onResult: (Int) -> Unit) {
         viewModelScope.launch {
@@ -230,7 +233,7 @@ class AiViewModel : ViewModel() {
     }
 
     /**
-     * 기록 삭제 (이미지도 함께 삭제)
+     * 기록 삭제 (이미지도 함께 삭제) -> 내가 저장한 기록중에 갤러리에서 사진 삭제하듯이 , 저장사진 삭제.
      */
     fun deleteHistory(userId: String, historyId: String, imageUrl: String) {
         viewModelScope.launch {
