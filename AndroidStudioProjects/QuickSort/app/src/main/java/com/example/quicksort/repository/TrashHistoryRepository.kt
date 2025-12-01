@@ -13,41 +13,41 @@ class TrashHistoryRepository {
 
     /**
      * 사용자의 trash_history에 새 기록 추가
-     * users/{userId}/trash_history subcollection에 저장
+     * users/{uid}/trash_history subcollection에 저장
      */
     suspend fun addTrashHistory(
-        userId: String,
+        uid: String,
         imageUrl: String,
         category: String,
         detail: String,
         guide: List<String>,
-        pointsEarned: Int
+        carbonReduced: Double
     ): Result<String> {
         return try {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val currentDate = dateFormat.format(Date())
 
-            // guide List<String>을 하나의 문자열로 결합
-            val guideText = guide.joinToString("\n")
+            // 자동 생성될 ID를 미리 가져오기
+            val docRef = db.collection("users")
+                .document(uid)
+                .collection("trash_history")
+                .document()
 
             val history = TrashHistory(
+                id = docRef.id,
                 image_url = imageUrl,
                 category = category,
                 detail = detail,
-                guide = guideText,
-                points_earned = pointsEarned,
+                guide = guide,  // List<String> 그대로 저장
+                carbonReduced = carbonReduced,
                 date = currentDate
             )
 
-            // users/{userId}/trash_history subcollection에 추가
-            val docRef = db.collection("users")
-                .document(userId)
-                .collection("trash_history")
-                .add(history)
-                .await()
+            // Firestore에 저장
+            docRef.set(history).await()
 
-            // 사용자 points 업데이트
-            updateUserPoints(userId, pointsEarned)
+            // 사용자 CO₂ 절감량 업데이트
+            updateUserCarbon(uid, carbonReduced)
 
             Result.success(docRef.id)
         } catch (e: Exception) {
@@ -58,10 +58,10 @@ class TrashHistoryRepository {
     /**
      * 사용자의 trash_history 가져오기 (최신순)
      */
-    suspend fun getUserTrashHistory(userId: String): Result<List<TrashHistory>> {
+    suspend fun getUserTrashHistory(uid: String): Result<List<TrashHistory>> {
         return try {
             val snapshot = db.collection("users")
-                .document(userId)
+                .document(uid)
                 .collection("trash_history")
                 .orderBy("date", Query.Direction.DESCENDING)
                 .get()
@@ -78,29 +78,29 @@ class TrashHistoryRepository {
     }
 
     /**
-     * 사용자 점수 업데이트 (트랜잭션으로 안전하게)
+     * 사용자 CO₂ 절감량 업데이트 (트랜잭션으로 안전하게)
      */
-    private suspend fun updateUserPoints(userId: String, pointsToAdd: Int) {
+    private suspend fun updateUserCarbon(uid: String, carbonToAdd: Double) {
         try {
-            val userRef = db.collection("users").document(userId)
+            val userRef = db.collection("users").document(uid)
             db.runTransaction { transaction ->
                 val snapshot = transaction.get(userRef)
-                val currentPoints = snapshot.getLong("points")?.toInt() ?: 100
-                transaction.update(userRef, "points", currentPoints + pointsToAdd)
+                val currentCarbon = snapshot.getDouble("totalCarbonReduced") ?: 0.0
+                transaction.update(userRef, "totalCarbonReduced", currentCarbon + carbonToAdd)
             }.await()
         } catch (e: Exception) {
             // 에러 로깅만 하고 메인 작업은 성공으로 처리
-            android.util.Log.e("TrashHistoryRepo", "Failed to update points", e)
+            android.util.Log.e("TrashHistoryRepo", "Failed to update carbon", e)
         }
     }
 
     /**
      * 특정 기록 삭제
      */
-    suspend fun deleteTrashHistory(userId: String, historyId: String): Result<Unit> {
+    suspend fun deleteTrashHistory(uid: String, historyId: String): Result<Unit> {
         return try {
             db.collection("users")
-                .document(userId)
+                .document(uid)
                 .collection("trash_history")
                 .document(historyId)
                 .delete()
@@ -112,3 +112,4 @@ class TrashHistoryRepository {
         }
     }
 }
+

@@ -1,6 +1,6 @@
 package com.example.quicksort.repository
 
-import com.example.quicksort.models.User
+import com.example.quicksort.models.UserProfile
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -10,12 +10,12 @@ class UserRepository {
     private val usersCollection = db.collection("users")
 
     /**
-     * 사용자 정보 가져오기
+     * 사용자 정보 가져오기 (uid 기반)
      */
-    suspend fun getUser(userId: String): Result<User> {
+    suspend fun getUser(uid: String): Result<UserProfile> {
         return try {
-            val document = usersCollection.document(userId).get().await()
-            val user = document.toObject(User::class.java)
+            val document = usersCollection.document(uid).get().await()
+            val user = document.toObject(UserProfile::class.java)
 
             if (user != null) {
                 Result.success(user)
@@ -28,18 +28,18 @@ class UserRepository {
     }
 
     /**
-     * 랭킹 - 점수 순으로 사용자 목록 가져오기
+     * 랭킹 - CO₂ 절감량 순으로 사용자 목록 가져오기
      */
-    suspend fun getRanking(limit: Int = 10): Result<List<User>> {
+    suspend fun getRanking(limit: Int = 10): Result<List<UserProfile>> {
         return try {
             val snapshot = usersCollection
-                .orderBy("points", Query.Direction.DESCENDING)
+                .orderBy("totalCarbonReduced", Query.Direction.DESCENDING)
                 .limit(limit.toLong())
                 .get()
                 .await()
 
             val users = snapshot.documents.mapNotNull {
-                it.toObject(User::class.java)
+                it.toObject(UserProfile::class.java)
             }
 
             Result.success(users)
@@ -49,13 +49,13 @@ class UserRepository {
     }
 
     /**
-     * 사용자의 현재 점수 가져오기
+     * 사용자의 현재 CO₂ 절감량 가져오기
      */
-    suspend fun getUserPoints(userId: String): Result<Int> {
+    suspend fun getUserCarbon(uid: String): Result<Double> {
         return try {
-            val document = usersCollection.document(userId).get().await()
-            val points = document.getLong("points")?.toInt() ?: 100
-            Result.success(points)
+            val document = usersCollection.document(uid).get().await()
+            val carbon = document.getDouble("totalCarbonReduced") ?: 0.0
+            Result.success(carbon)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -64,14 +64,14 @@ class UserRepository {
     /**
      * 특정 사용자의 랭킹 순위 가져오기
      */
-    suspend fun getUserRank(userId: String): Result<Int> {
+    suspend fun getUserRank(uid: String): Result<Int> {
         return try {
-            // 해당 사용자의 점수 가져오기
-            val userPoints = getUserPoints(userId).getOrThrow()
+            // 해당 사용자의 CO₂ 절감량 가져오기
+            val userCarbon = getUserCarbon(uid).getOrThrow()
 
-            // 해당 점수보다 높은 사용자 수 세기
+            // 해당 절감량보다 높은 사용자 수 세기
             val snapshot = usersCollection
-                .whereGreaterThan("points", userPoints)
+                .whereGreaterThan("totalCarbonReduced", userCarbon)
                 .get()
                 .await()
 
