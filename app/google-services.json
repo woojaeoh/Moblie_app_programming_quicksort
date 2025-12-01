@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "418547902150",
+    "project_id": "loginmanager-672e5",
+    "storage_bucket": "loginmanager-672e5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:418547902150:android:69355d8ea42af025dc99c7",
+        "android_client_info": {
+          "package_name": "com.example.loginmanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsHYtwN93Da7B3AymPdzOwVtfu_R5EWbE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
