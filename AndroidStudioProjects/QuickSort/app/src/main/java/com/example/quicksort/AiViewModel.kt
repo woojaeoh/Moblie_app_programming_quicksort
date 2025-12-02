@@ -7,12 +7,12 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
 import com.example.quicksort.models.TrashHistory
-import com.example.quicksort.models.User
+import com.example.quicksort.models.UserProfile
 import com.example.quicksort.repository.StorageRepository
 import com.example.quicksort.repository.TrashGuideRepository
 import com.example.quicksort.repository.TrashHistoryRepository
 import com.example.quicksort.repository.UserRepository
-import com.example.quicksort.utils.PointsCalculator
+import com.example.quicksort.utils.CarbonCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,7 +37,7 @@ class AiViewModel : ViewModel() {
         val category: String,
         val detail: String,
         val guide: List<String>,
-        val points: Int
+        val carbonReduced: Double  // kg CO₂eq
     )
 
     /**
@@ -45,12 +45,12 @@ class AiViewModel : ViewModel() {
      * Storage 업로드 → AI 분석 → 가이드 검색
      * 업로드 성공 시 에뮬레이터의 임시 파일 자동 삭제
      *
-     * @param userId 사용자 ID (Storage 폴더 구분용)
+     * @param uid 사용자 UID (Storage 폴더 구분용)
      * @param imageUri 촬영한 이미지의 로컬 URI
      * @param context Context (임시 파일 삭제용)
-     * @param onResult 결과 콜백 (category, detail, guide, points)
+     * @param onResult 결과 콜백 (category, detail, guide, carbonReduced)
      */
-    fun analyzeRecycling(userId: String, imageUri: Uri, context: Context, onResult: (RecyclingResult?) -> Unit) {
+    fun analyzeRecycling(uid: String, imageUri: Uri, context: Context, onResult: (RecyclingResult?) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
@@ -58,7 +58,7 @@ class AiViewModel : ViewModel() {
             try {
                 // 1. Firebase Storage에 이미지 업로드 (업로드 후 자동으로 로컬 임시 파일 삭제)
                 Log.d("RECYCLING", "이미지 업로드 중...")
-                val uploadResult = storageRepo.uploadImage(imageUri, userId, context)
+                val uploadResult = storageRepo.uploadImage(imageUri, uid, context)
 
                 if (uploadResult.isFailure) {
                     _errorMessage.value = "이미지 업로드 실패: ${uploadResult.exceptionOrNull()?.message}"
@@ -100,8 +100,8 @@ class AiViewModel : ViewModel() {
 
                 val guide = guideResult.getOrNull() ?: emptyList()
 
-                // 4. 카테고리별 점수 계산
-                val points = PointsCalculator.getPoints(category)
+                // 4. 카테고리별 CO₂ 절감량 계산
+                val carbonReduced = CarbonCalculator.calculateCarbon(category)
 
                 // 결과 반환 (저장은 하지 않음)
                 val recyclingResult = RecyclingResult(
@@ -109,10 +109,10 @@ class AiViewModel : ViewModel() {
                     category = category,
                     detail = detail,
                     guide = guide,
-                    points = points
+                    carbonReduced = carbonReduced
                 )
 
-                Log.d("RECYCLING", "분석 완료 - $points 점 예상")
+                Log.d("RECYCLING", "분석 완료 - ${carbonReduced}kg CO₂ 절감 예상")
                 onResult(recyclingResult)
 
             } catch (e: Exception) {
@@ -128,19 +128,19 @@ class AiViewModel : ViewModel() {
     /**
      * 2단계: 분석 결과를 히스토리에 저장 (사용자가 저장 버튼 누를 때)
      *
-     * @param userId 사용자 ID
+     * @param uid 사용자 UID
      * @param result analyzeRecycling()에서 받은 결과
      */
-    fun saveToHistory(userId: String, result: RecyclingResult, onSuccess: () -> Unit) {
+    fun saveToHistory(uid: String, result: RecyclingResult, onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
                 val saveResult = trashHistoryRepo.addTrashHistory(
-                    userId = userId,
+                    uid = uid,
                     imageUrl = result.imageUrl,
                     category = result.category,
                     detail = result.detail,
                     guide = result.guide,
-                    pointsEarned = result.points
+                    carbonReduced = result.carbonReduced
                 )
 
                 if (saveResult.isFailure) {
@@ -148,7 +148,7 @@ class AiViewModel : ViewModel() {
                     return@launch
                 }
 
-                Log.d("RECYCLING", "저장 완료 - ${result.points}점 획득!")
+                Log.d("RECYCLING", "저장 완료 - ${result.carbonReduced}kg CO₂ 절감!")
                 onSuccess()
 
             } catch (e: Exception) {
@@ -175,9 +175,9 @@ class AiViewModel : ViewModel() {
     /**
      * 사용자의 분리수거 기록 가져오기 (갤러리용) -> 프론트에서 coil라이브러리로 인스타그램처럼 사진 3분할로 보여주면 좋을듯.
      */
-    fun getUserHistory(userId: String, onResult: (List<TrashHistory>) -> Unit) {
+    fun getUserHistory(uid: String, onResult: (List<TrashHistory>) -> Unit) {
         viewModelScope.launch {
-            val result = trashHistoryRepo.getUserTrashHistory(userId)
+            val result = trashHistoryRepo.getUserTrashHistory(uid)
             result.onSuccess { histories ->
                 onResult(histories)
             }.onFailure { e ->
@@ -188,9 +188,9 @@ class AiViewModel : ViewModel() {
     }
 
     /**
-     * 랭킹 가져오기 (분리수거 점수로 정렬한 결과 반환)
+     * 랭킹 가져오기 (CO₂ 절감량으로 정렬한 결과 반환)
      */
-    fun getRanking(limit: Int = 10, onResult: (List<User>) -> Unit) {
+    fun getRanking(limit: Int = 10, onResult: (List<UserProfile>) -> Unit) {
         viewModelScope.launch {
             val result = userRepo.getRanking(limit)
             result.onSuccess { users ->
@@ -205,9 +205,9 @@ class AiViewModel : ViewModel() {
     /**
      * 사용자 정보 가져오기 -> 개인정보 프로필 화면이 있다면 사용. ex) 로그인 후 홈 화면
      */
-    fun getUserInfo(userId: String, onResult: (User) -> Unit) {
+    fun getUserInfo(uid: String, onResult: (UserProfile) -> Unit) {
         viewModelScope.launch {
-            val result = userRepo.getUser(userId)
+            val result = userRepo.getUser(uid)
             result.onSuccess { user ->
                 onResult(user)
             }.onFailure { e ->
@@ -220,9 +220,9 @@ class AiViewModel : ViewModel() {
     /**
      * 내 순위 가져오기 -> 프로필 화면에서 내 순위 표시. , 전체 랭킹 화면에서 내 순위 강조 표시
      */
-    fun getMyRank(userId: String, onResult: (Int) -> Unit) {
+    fun getMyRank(uid: String, onResult: (Int) -> Unit) {
         viewModelScope.launch {
-            val result = userRepo.getUserRank(userId)
+            val result = userRepo.getUserRank(uid)
             result.onSuccess { rank ->
                 onResult(rank)
             }.onFailure { e ->
@@ -235,14 +235,14 @@ class AiViewModel : ViewModel() {
     /**
      * 기록 삭제 (이미지도 함께 삭제) -> 내가 저장한 기록중에 갤러리에서 사진 삭제하듯이 , 저장사진 삭제.
      */
-    fun deleteHistory(userId: String, historyId: String, imageUrl: String) {
+    fun deleteHistory(uid: String, historyId: String, imageUrl: String) {
         viewModelScope.launch {
             try {
                 // Storage에서 이미지 삭제
                 storageRepo.deleteImage(imageUrl)
 
                 // Firestore에서 기록 삭제
-                trashHistoryRepo.deleteTrashHistory(userId, historyId)
+                trashHistoryRepo.deleteTrashHistory(uid, historyId)
 
                 Log.d("RECYCLING", "기록 삭제 완료")
             } catch (e: Exception) {

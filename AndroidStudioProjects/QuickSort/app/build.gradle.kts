@@ -51,7 +51,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.firebase.auth.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -60,20 +59,26 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Firebase BOM (Bill of Materials) - 버전 통일
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
 
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
+    // **수정 및 추가:**
+    // 1. tasks.await()를 위한 코루틴 의존성 (필수!)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    // (A) 에러 발생 라이브러리: 버전 명시 시도
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.1") // 예시 버전
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.0") // 예시 버전
 
+    // firebase-storage는 KTX가 없으므로 그대로 사용
+    implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-analytics")
 
+    // Retrofit (AI 서버 통신)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
 
-    implementation (platform("com.google.firebase:firebase-bom:33.1.0"))
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
-
-    // ViewModel Compose 통합 (ViewModel을 Composable에서 사용 가능하게 함)
+    // ViewModel Compose 통합
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
 }

@@ -95,20 +95,46 @@ class TrashHistoryRepository {
     }
 
     /**
-     * 특정 기록 삭제
+     * 특정 기록 삭제 (totalCarbonReduced도 함께 감소)
      */
     suspend fun deleteTrashHistory(uid: String, historyId: String): Result<Unit> {
         return try {
-            db.collection("users")
+            // 1. 삭제 전에 carbonReduced 값 가져오기
+            val historyRef = db.collection("users")
                 .document(uid)
                 .collection("trash_history")
                 .document(historyId)
-                .delete()
-                .await()
+
+            val snapshot = historyRef.get().await()
+            val carbonReduced = snapshot.getDouble("carbonReduced") ?: 0.0
+
+            // 2. 기록 삭제
+            historyRef.delete().await()
+
+            // 3. totalCarbonReduced 감소
+            decreaseUserCarbon(uid, carbonReduced)
 
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * 사용자 CO₂ 절감량 감소 (기록 삭제 시)
+     */
+    private suspend fun decreaseUserCarbon(uid: String, carbonToSubtract: Double) {
+        try {
+            val userRef = db.collection("users").document(uid)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val currentCarbon = snapshot.getDouble("totalCarbonReduced") ?: 0.0
+                val newCarbon = (currentCarbon - carbonToSubtract).coerceAtLeast(0.0) // 음수 방지
+                transaction.update(userRef, "totalCarbonReduced", newCarbon)
+            }.await()
+        } catch (e: Exception) {
+            // 에러 로깅만 하고 메인 작업은 성공으로 처리
+            android.util.Log.e("TrashHistoryRepo", "Failed to decrease carbon", e)
         }
     }
 }

@@ -10,6 +10,26 @@ class UserRepository {
     private val usersCollection = db.collection("users")
 
     /**
+     * 신규 사용자 생성 (회원가입 시 호출)
+     * Firebase Authentication 성공 후 Firestore에 UserProfile 생성
+     */
+    suspend fun createUser(uid: String, username: String, email: String): Result<Unit> {
+        return try {
+            val userProfile = UserProfile(
+                uid = uid,
+                username = username,
+                email = email,
+                totalCarbonReduced = 0.0
+            )
+
+            usersCollection.document(uid).set(userProfile).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * 사용자 정보 가져오기 (uid 기반)
      */
     suspend fun getUser(uid: String): Result<UserProfile> {
