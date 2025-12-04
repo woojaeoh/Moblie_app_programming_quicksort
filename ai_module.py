@@ -330,13 +330,9 @@ def classify_image(image_url):
     detail = classify_details(cls, image_info)
 
     return {
-        "Bounding": [
-            {
-                "CLASS": cls,
-                "DETAILS": detail,
-                "IMAGE INFO": image_info
-            }
-        ]
+        "status": " ",
+        "category": cls,
+        "detail": detail
     }
 
 
