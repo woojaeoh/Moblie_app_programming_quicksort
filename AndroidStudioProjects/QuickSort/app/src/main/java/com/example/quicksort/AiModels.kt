@@ -5,7 +5,7 @@ data class AiRequest(
 )
 
 data class AiResponse(
-    val status: String,
+//    val status: String,
     val category: String,
     val detail: String
 )
