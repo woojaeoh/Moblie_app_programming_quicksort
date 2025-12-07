@@ -91,7 +91,8 @@ fun AppNavHost(navController: androidx.navigation.NavHostController) {
                 onBackClick = { navController.popBackStack() },
                 onImageCaptured = { uri ->
                     // 이미지 촬영 후 AI 분석
-                    aiViewModel.analyzeRecycling(uri) { success ->
+                    val uid = authViewModel.getCurrentUid() ?: return@CameraScreen
+                    aiViewModel.analyzeRecyclingSimple(uid, uri, context) { success ->
                         if (success) {
                             navController.navigate("result") {
                                 popUpTo("camera") { inclusive = true }
