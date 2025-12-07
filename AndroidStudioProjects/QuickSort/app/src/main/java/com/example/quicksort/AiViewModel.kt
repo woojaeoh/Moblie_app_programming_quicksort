@@ -320,7 +320,7 @@ class AiViewModel : ViewModel() {
     fun getGuideForCategory(category: String, onResult: (List<String>) -> Unit) {
         viewModelScope.launch {
             try {
-                val guideResult = trashGuideRepo.getGuide(category, "")
+                val guideResult = trashGuideRepo.getGuide(category,"")
 
                 if (guideResult.isSuccess) {
                     val descriptions = guideResult.getOrNull() ?: emptyList()
