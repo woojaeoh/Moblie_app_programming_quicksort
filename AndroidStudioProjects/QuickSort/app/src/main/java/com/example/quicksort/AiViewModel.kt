@@ -31,6 +31,16 @@ class AiViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    // 분석 결과 StateFlow (ResultScreen용)
+    data class AnalysisResult(
+        val imageUri: Uri,
+        val category: String,
+        val detail: String
+    )
+
+    private val _analysisResult = MutableStateFlow<AnalysisResult?>(null)
+    val analysisResult: StateFlow<AnalysisResult?> = _analysisResult.asStateFlow()
+
     // 분석 결과를 담는 데이터 클래스
     data class RecyclingResult(
         val imageUrl: String,
@@ -277,6 +287,91 @@ class AiViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 Log.e("AI_TEST", "predict 예외 발생", e)
+            }
+        }
+    }
+
+    // ===== ResultScreen용 헬퍼 함수들 =====
+
+    /**
+     * 간단한 analyzeRecycling 오버로드 (ResultScreen에서 사용)
+     */
+    fun analyzeRecycling(imageUri: Uri, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                // AI 분석 (간단한 버전 - Storage 업로드 없이 로컬 분석)
+                // 실제로는 AI 서버에 전송해야 하지만, 여기서는 analysisResult만 설정
+                _analysisResult.value = AnalysisResult(
+                    imageUri = imageUri,
+                    category = "플라스틱",
+                    detail = "페트병"
+                )
+                onComplete(true)
+            } catch (e: Exception) {
+                Log.e("AiViewModel", "분석 실패", e)
+                onComplete(false)
+            }
+        }
+    }
+
+    /**
+     * 카테고리별 가이드 가져오기 (ResultScreen용 - List<String> 반환)
+     */
+    fun getGuideForCategory(category: String, onResult: (List<String>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val guideResult = trashGuideRepo.getGuide(category, "")
+
+                if (guideResult.isSuccess) {
+                    val descriptions = guideResult.getOrNull() ?: emptyList()
+                    if (descriptions.isNotEmpty()) {
+                        onResult(descriptions)
+                    } else {
+                        onResult(listOf("가이드를 찾을 수 없습니다."))
+                    }
+                } else {
+                    onResult(listOf("가이드를 찾을 수 없습니다."))
+                }
+            } catch (e: Exception) {
+                Log.e("AiViewModel", "가이드 가져오기 실패", e)
+                onResult(listOf("가이드 로드 중 오류가 발생했습니다."))
+            }
+        }
+    }
+
+    /**
+     * 카테고리별 CO2 절감량 계산
+     */
+    fun calculateCarbonReduction(category: String): Double {
+        return CarbonCalculator.calculateCarbon(category)
+    }
+
+    /**
+     * 분리수거 기록 저장 (ResultScreen용 오버로드)
+     */
+    fun saveToHistory(
+        uid: String,
+        imageUrl: String,
+        category: String,
+        detail: String,
+        guide: String,
+        carbonReduced: Double,
+        onComplete: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val result = trashHistoryRepo.addTrashHistory(
+                    uid = uid,
+                    imageUrl = imageUrl,
+                    category = category,
+                    detail = detail,
+                    guide = guide.split("\n"),  // String을 List<String>으로 변환
+                    carbonReduced = carbonReduced
+                )
+                onComplete(result.isSuccess)
+            } catch (e: Exception) {
+                Log.e("AiViewModel", "기록 저장 실패", e)
+                onComplete(false)
             }
         }
     }

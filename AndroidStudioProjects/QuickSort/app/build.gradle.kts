@@ -81,4 +81,22 @@ dependencies {
     // ViewModel Compose 통합
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // CameraX
+    implementation("androidx.camera:camera-core:1.3.1")
+    implementation("androidx.camera:camera-camera2:1.3.1")
+    implementation("androidx.camera:camera-lifecycle:1.3.1")
+    implementation("androidx.camera:camera-view:1.3.1")
+
+    // Coil (이미지 로딩)
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Accompanist (권한 요청)
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
+    // Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
+
 }
