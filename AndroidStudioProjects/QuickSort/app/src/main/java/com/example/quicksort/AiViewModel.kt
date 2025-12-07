@@ -294,19 +294,26 @@ class AiViewModel : ViewModel() {
     // ===== ResultScreen용 헬퍼 함수들 =====
 
     /**
-     * 간단한 analyzeRecycling 오버로드 (ResultScreen에서 사용)
+     * 간단한 analyzeRecycling 오버로드 (MainActivity에서 사용)
+     * 실제 AI 분석 함수를 호출하고 결과를 StateFlow에 저장
      */
-    fun analyzeRecycling(imageUri: Uri, onComplete: (Boolean) -> Unit) {
+    fun analyzeRecyclingSimple(uid: String, imageUri: Uri, context: Context, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                // AI 분석 (간단한 버전 - Storage 업로드 없이 로컬 분석)
-                // 실제로는 AI 서버에 전송해야 하지만, 여기서는 analysisResult만 설정
-                _analysisResult.value = AnalysisResult(
-                    imageUri = imageUri,
-                    category = "플라스틱",
-                    detail = "페트병"
-                )
-                onComplete(true)
+                // 실제 AI 분석 함수 호출
+                analyzeRecycling(uid, imageUri, context) { result ->
+                    if (result != null) {
+                        // AI에서 받은 실제 데이터로 analysisResult 설정
+                        _analysisResult.value = AnalysisResult(
+                            imageUri = imageUri,
+                            category = result.category,  // AI 서버에서 받은 실제 데이터
+                            detail = result.detail        // AI 서버에서 받은 실제 데이터
+                        )
+                        onComplete(true)
+                    } else {
+                        onComplete(false)
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("AiViewModel", "분석 실패", e)
                 onComplete(false)
@@ -320,7 +327,7 @@ class AiViewModel : ViewModel() {
     fun getGuideForCategory(category: String, onResult: (List<String>) -> Unit) {
         viewModelScope.launch {
             try {
-                val guideResult = trashGuideRepo.getGuide(category, "")
+                val guideResult = trashGuideRepo.getGuide(category,"")
 
                 if (guideResult.isSuccess) {
                     val descriptions = guideResult.getOrNull() ?: emptyList()
