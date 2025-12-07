@@ -1,15 +1,27 @@
+# Ignore everything at the root level
+/*
+
+# But allow AndroidStudioProjects directory
+!/AndroidStudioProjects
+
+# Ignore everything inside AndroidStudioProjects
+/AndroidStudioProjects/*
+
+# But allow QuickSort directory
+!/AndroidStudioProjects/QuickSort
+
+# Android specific ignores
 *.iml
 .gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+local.properties
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
 .DS_Store
-/build
-/captures
+build
+captures
 .externalNativeBuild
 .cxx
-local.properties
