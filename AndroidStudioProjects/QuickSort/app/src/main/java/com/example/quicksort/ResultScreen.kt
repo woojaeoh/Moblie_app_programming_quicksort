@@ -49,7 +49,7 @@ fun ResultScreen(
             imageUri = result.imageUri
 
             // 가이드 가져오기
-            aiViewModel.getGuideForCategory(category) { guideList ->
+            aiViewModel.getGuideForCategory(category, detail) { guideList ->
                 descriptions = guideList
                 isLoading = false
             }
