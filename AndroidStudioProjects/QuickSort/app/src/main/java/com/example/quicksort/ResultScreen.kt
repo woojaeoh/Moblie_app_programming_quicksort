@@ -130,26 +130,29 @@ fun ResultScreen(
 
             // 설명 + 체크박스 목록
             descriptions.forEachIndexed { index, desc ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = checkedStates[index],
-                        onCheckedChange = {
-                            checkedStates[index] = it
-                        }
-                    )
-                    Text(
-                        text = desc,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 18.sp,
-                        modifier = Modifier.weight(1f)
-                    )
+                if (index < checkedStates.size) {  // ← 이 줄 추가
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedStates[index],
+                            onCheckedChange = {
+                                checkedStates[index] = it
+                            }
+                        )
+                        Text(
+                            text = desc,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 18.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
+                }
         }
 
         // 하단 버튼
@@ -189,4 +192,4 @@ fun ResultScreen(
             )
         }
     }
-}
+
