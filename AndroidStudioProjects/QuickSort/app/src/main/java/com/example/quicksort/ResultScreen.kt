@@ -49,7 +49,7 @@ fun ResultScreen(
             imageUri = result.imageUri
 
             // 가이드 가져오기
-            aiViewModel.getGuideForCategory(category) { guideList ->
+            aiViewModel.getGuideForCategory(category, detail) { guideList ->
                 descriptions = guideList
                 isLoading = false
             }
@@ -66,25 +66,23 @@ fun ResultScreen(
 
     val allChecked = checkedStates.isNotEmpty() && checkedStates.all { it }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-
-        // 상단 제목
-        Text(
-            text = "분석 결과",
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(top = 20.dp, bottom = 16.dp)
-        )
-
-        // 스크롤 가능한 영역
+        // 스크롤 가능한 콘텐츠 영역
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 76.dp) // 버튼 공간 확보
                 .verticalScroll(rememberScrollState())
         ) {
+            // 상단 제목
+            Text(
+                text = "분석 결과",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.padding(top = 20.dp, bottom = 16.dp)
+            )
 
             // 로딩 상태
             if (isLoading) {
@@ -130,7 +128,7 @@ fun ResultScreen(
 
             // 설명 + 체크박스 목록
             descriptions.forEachIndexed { index, desc ->
-                if (index < checkedStates.size) {  // ← 이 줄 추가
+                if (index < checkedStates.size) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -152,10 +150,9 @@ fun ResultScreen(
                     }
                 }
             }
-                }
         }
 
-        // 하단 버튼
+        // 맨 아래 고정된 버튼
         Button(
             onClick = {
                 if (allChecked) {
@@ -181,7 +178,8 @@ fun ResultScreen(
             enabled = allChecked && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 20.dp)
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 20.dp, vertical = 20.dp)
                 .height(56.dp)
         ) {
             Text(

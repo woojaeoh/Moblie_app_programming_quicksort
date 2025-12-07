@@ -82,10 +82,10 @@ fun HomeScreen(
 
         // ④ 배경 이미지 - CO2에 따라 나무 성장!
         val treeResource = when {
-            CO2 < 10.0 -> R.drawable.tree1
-            CO2 < 30.0 -> R.drawable.tree2
-            CO2 < 60.0 -> R.drawable.tree3
-            CO2 < 100.0 -> R.drawable.tree4
+            CO2 < 2.0 -> R.drawable.tree1
+            CO2 < 4.0 -> R.drawable.tree2
+            CO2 < 6.0 -> R.drawable.tree3
+            CO2 < 8.0 -> R.drawable.tree4
             else -> R.drawable.tree5
         }
 

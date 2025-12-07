@@ -324,10 +324,10 @@ class AiViewModel : ViewModel() {
     /**
      * 카테고리별 가이드 가져오기 (ResultScreen용 - List<String> 반환)
      */
-    fun getGuideForCategory(category: String, onResult: (List<String>) -> Unit) {
+    fun getGuideForCategory(category: String, detail: String, onResult: (List<String>) -> Unit) {
         viewModelScope.launch {
             try {
-                val guideResult = trashGuideRepo.getGuide(category,"")
+                val guideResult = trashGuideRepo.getGuide(category, detail)
 
                 if (guideResult.isSuccess) {
                     val descriptions = guideResult.getOrNull() ?: emptyList()
