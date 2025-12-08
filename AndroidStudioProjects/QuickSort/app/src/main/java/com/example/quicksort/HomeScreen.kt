@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -32,7 +33,8 @@ fun HomeScreen(
     onCameraClick: () -> Unit,
     onStatsClick: () -> Unit,
     authViewModel: AuthViewModel,
-    aiViewModel: AiViewModel
+    aiViewModel: AiViewModel,
+    onHistoryClick: () -> Unit = {}
 ) {
     var userName by remember { mutableStateOf("사용자") }
     var CO2 by remember { mutableStateOf(0.0) }
@@ -173,6 +175,47 @@ fun HomeScreen(
                     subtitle = "내 분리수거 성향을\n알아보아요.",
                     onClick = onStatsClick
                 )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 히스토리 카드 (가로로 길게)
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .height(100.dp)
+                    .clickable { onHistoryClick() }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "내 기록",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Text(
+                            text = "저장한 분리수거 사진을 확인하세요.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
