@@ -111,7 +111,7 @@ fun ResultScreen(
 
             // 물건 이름
             Text(
-                text = itemName,
+                text = category,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
                     fontSize = 30.sp
@@ -119,7 +119,7 @@ fun ResultScreen(
             )
 
             Text(
-                text = "이 물건이 아닌가요?",
+                text = itemName,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Gray
                 ),
