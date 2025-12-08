@@ -104,12 +104,21 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(bottom = 24.dp)
         ) {
+            // 로고
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .padding(top = 16.dp, start = 16.dp)
+                    .size(120.dp)
+            )
+
 
             // 상단 텍스트
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 98.dp, end = 24.dp)
+                    .padding(start = 24.dp, top = 28.dp, end = 24.dp)
             ) {
                 Text(
                     text = "안녕하세요, $userName 님!",

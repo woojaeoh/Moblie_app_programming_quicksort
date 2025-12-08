@@ -262,6 +262,60 @@ class AiViewModel : ViewModel() {
         }
     }
 
+
+    /**
+     * 통계 화면용 함수
+     * 각 카테고리별 차지하는 비율, 순서대로 정렬
+     */
+
+    data class CategoryStat(
+        val category: String,
+        val count: Int,
+        val ratio: Float
+    )
+
+    fun getCategoryStats(uid: String, onResult: (List<CategoryStat>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = trashHistoryRepo.getUserTrashHistory(uid)
+
+                result.onSuccess { histories ->
+                    if (histories.isEmpty()) {
+                        onResult(emptyList())
+                        return@onSuccess
+                    }
+
+                    // 1) 카테고리별 개수 세기
+                    val grouped = histories.groupingBy { it.category }.eachCount()
+
+                    val total = histories.size.toFloat()
+
+                    // 2) 비율 계산 + count 내림차순 정렬
+                    val stats = grouped.map { (category, count) ->
+                        CategoryStat(
+                            category = category,
+                            count = count,
+                            ratio = count / total
+                        )
+                    }.sortedByDescending { it.count }
+
+                    onResult(stats)
+                }.onFailure { e ->
+                    Log.e("RECYCLING", "카테고리 통계 실패", e)
+                    _errorMessage.value = "카테고리 통계 실패: ${e.message}"
+                    onResult(emptyList())
+                }
+            } catch (e: Exception) {
+                Log.e("RECYCLING", "카테고리 통계 예외", e)
+                _errorMessage.value = "카테고리 통계 예외: ${e.message}"
+                onResult(emptyList())
+            }
+        }
+    }
+
+
+
+
     // ========== 테스트 함수들 ==========
     fun testPing() {
         viewModelScope.launch {
@@ -290,6 +344,9 @@ class AiViewModel : ViewModel() {
             }
         }
     }
+
+
+
 
     // ===== ResultScreen용 헬퍼 함수들 =====
 

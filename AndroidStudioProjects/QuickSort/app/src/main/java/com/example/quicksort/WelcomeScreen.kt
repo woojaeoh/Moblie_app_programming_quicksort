@@ -13,6 +13,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.layout.ContentScale
+
 
 @Composable
 fun WelcomeScreen(
@@ -63,6 +65,20 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.Center
         ) {
             // 앱 제목
+
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(110.dp),   // 원하는 높이
+                contentScale = ContentScale.FillHeight
+            )
+
+
+            /**
+             * 로고로 대체
+
             Text(
                 text = "QuickSort",
                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -71,8 +87,9 @@ fun WelcomeScreen(
                     color = Color(0xFF2D5016)
                 )
             )
+             */
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Text(
                 text = "분리수거를 쉽고 빠르게",

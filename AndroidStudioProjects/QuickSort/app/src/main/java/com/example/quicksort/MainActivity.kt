@@ -79,7 +79,7 @@ fun AppNavHost(navController: androidx.navigation.NavHostController) {
         composable("home") {
             HomeScreen(
                 onCameraClick = { navController.navigate("camera") },
-                onStatsClick = {},
+                onStatsClick = { navController.navigate("stats") },
                 authViewModel = authViewModel,
                 aiViewModel = aiViewModel
             )
@@ -119,6 +119,19 @@ fun AppNavHost(navController: androidx.navigation.NavHostController) {
                 authViewModel = authViewModel
             )
         }
+
+        // 통계 화면
+        composable("stats") {
+            StatsScreen(
+                authViewModel = authViewModel,
+                aiViewModel = aiViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+
+
+
     }
 }
 
