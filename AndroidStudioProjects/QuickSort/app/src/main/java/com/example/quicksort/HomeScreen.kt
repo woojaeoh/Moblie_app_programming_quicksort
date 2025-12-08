@@ -118,7 +118,7 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, top = 28.dp, end = 24.dp)
+                    .padding(start = 24.dp, top = 8.dp, end = 24.dp)
             ) {
                 Text(
                     text = "안녕하세요, $userName 님!",
@@ -128,7 +128,7 @@ fun HomeScreen(
                     )
                 )
 
-                Spacer(modifier = Modifier.height(76.dp))
+                Spacer(modifier = Modifier.height(36.dp))
 
                 Text(
                     text = "지금까지 ${userName}님이 절감한 CO₂는",

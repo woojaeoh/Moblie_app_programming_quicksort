@@ -60,6 +60,7 @@ fun WelcomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .offset(y = (-40).dp)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -89,7 +90,7 @@ fun WelcomeScreen(
             )
              */
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             Text(
                 text = "분리수거를 쉽고 빠르게",
@@ -99,7 +100,7 @@ fun WelcomeScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(60.dp))
 
             // 로그인 버튼
             Button(
