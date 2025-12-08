@@ -15,6 +15,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.quicksort.AiViewModel.CategoryStat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 
 @Composable
 fun StatsScreen(
@@ -111,6 +116,20 @@ fun CategoryStatItem(
 ) {
     val barColor = if (isMax) Color(0xFF8F7669) else Color(0xFFBCDFAC)
 
+    var targetRatio by remember { mutableStateOf(0f) }
+
+    // Compose가 화면에 나타난 후 실제 ratio로 변경
+    LaunchedEffect(stat.ratio) {
+        targetRatio = stat.ratio
+    }
+
+    val animatedRatio by animateFloatAsState(
+        targetValue = targetRatio,
+        animationSpec = tween(
+            durationMillis = 1500 // 원하는 속도
+        )
+    )
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -133,7 +152,7 @@ fun CategoryStatItem(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .fillMaxWidth(stat.ratio)
+                    .fillMaxWidth(animatedRatio)
                     .background(barColor)
             )
         }
