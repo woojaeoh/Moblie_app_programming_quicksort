@@ -303,11 +303,24 @@ class AiViewModel : ViewModel() {
                 // 실제 AI 분석 함수 호출
                 analyzeRecycling(uid, imageUri, context) { result ->
                     if (result != null) {
+                        // "클래스 분류 불가"인 경우 "일반쓰레기"로 변환
+                        val displayCategory = if (result.category == "클래스 분류 불가") {
+                            "일반쓰레기"
+                        } else {
+                            result.category
+                        }
+
+                        val displayDetail = if (result.detail == "detail분류 불가" || result.detail.isEmpty()) {
+                            "일반쓰레기"
+                        } else {
+                            result.detail
+                        }
+
                         // AI에서 받은 실제 데이터로 analysisResult 설정
                         _analysisResult.value = AnalysisResult(
                             imageUri = imageUri,
-                            category = result.category,  // AI 서버에서 받은 실제 데이터
-                            detail = result.detail        // AI 서버에서 받은 실제 데이터
+                            category = displayCategory,
+                            detail = displayDetail
                         )
                         onComplete(true)
                     } else {

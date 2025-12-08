@@ -9,19 +9,27 @@ class TrashGuideRepository {
 
     /**
      * AI 응답으로 받은 category와 detail로 가이드 검색 (Subcollection 구조)
+     * "클래스 분류 불가"일 경우 일반쓰레기로 매칭
      * detail이 없으면 "기타" 문서로 매칭
      */
     suspend fun getGuide(category: String, detail: String): Result<List<String>> {
         return try {
+            // 0. "클래스 분류 불가"인 경우 일반쓰레기로 리다이렉트
+            val actualCategory = if (category == "클래스 분류 불가") {
+                "일반쓰레기"
+            } else {
+                category
+            }
+
             // 1. 카테고리 문서 존재 확인
-            val categoryDoc = trashGuideCollection.document(category).get().await()
+            val categoryDoc = trashGuideCollection.document(actualCategory).get().await()
             if (!categoryDoc.exists()) {
-                return Result.failure(Exception("카테고리를 찾을 수 없습니다: $category"))
+                return Result.failure(Exception("카테고리를 찾을 수 없습니다: $actualCategory"))
             }
 
             // 2. details subcollection에서 detail 문서 조회
             val detailDoc = trashGuideCollection
-                .document(category)
+                .document(actualCategory)
                 .collection("details")
                 .document(detail)
                 .get()
@@ -34,7 +42,7 @@ class TrashGuideRepository {
 
             // 3. detail이 없으면 "기타" 문서로 fallback
             val etcDoc = trashGuideCollection
-                .document(category)
+                .document(actualCategory)
                 .collection("details")
                 .document("기타")
                 .get()

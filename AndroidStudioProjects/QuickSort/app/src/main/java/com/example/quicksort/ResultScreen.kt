@@ -190,4 +190,5 @@ fun ResultScreen(
             )
         }
     }
+}
 
