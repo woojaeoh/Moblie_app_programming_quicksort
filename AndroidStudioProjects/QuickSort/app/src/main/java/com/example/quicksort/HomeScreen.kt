@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -34,7 +35,8 @@ fun HomeScreen(
     onStatsClick: () -> Unit,
     authViewModel: AuthViewModel,
     aiViewModel: AiViewModel,
-    onHistoryClick: () -> Unit = {}
+    onHistoryClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {}
 ) {
     var userName by remember { mutableStateOf("사용자") }
     var CO2 by remember { mutableStateOf(0.0) }
@@ -106,14 +108,36 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(bottom = 24.dp)
         ) {
-            // 로고
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "App Logo",
+            // 로고와 로그아웃 버튼
+            Row(
                 modifier = Modifier
-                    .padding(top = 16.dp, start = 16.dp)
-                    .size(120.dp)
-            )
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "App Logo",
+                    modifier = Modifier.size(120.dp)
+                )
+
+                IconButton(
+                    onClick = {
+                        authViewModel.signOut {
+                            onLogoutClick()
+                        }
+                    },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Logout,
+                        contentDescription = "로그아웃",
+                        tint = Color(0xFF5D4037),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
 
 
             // 상단 텍스트
@@ -179,43 +203,19 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 히스토리 카드 (가로로 길게)
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(6.dp),
+            // 히스토리 메뉴 카드
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .height(100.dp)
-                    .clickable { onHistoryClick() }
+                    .padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.History,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "내 기록",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                        Text(
-                            text = "저장한 분리수거 사진을 확인하세요.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
-                    }
-                }
+                HomeMenuCard(
+                    icon = Icons.Default.History,
+                    title = "내 기록",
+                    subtitle = "저장한 분리수거 사진을\n확인하세요.",
+                    onClick = onHistoryClick
+                )
             }
 
             Spacer(modifier = Modifier.weight(1f))

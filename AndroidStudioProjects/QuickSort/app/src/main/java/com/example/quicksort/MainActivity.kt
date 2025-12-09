@@ -81,6 +81,11 @@ fun AppNavHost(navController: androidx.navigation.NavHostController) {
                 onCameraClick = { navController.navigate("camera") },
                 onStatsClick = { navController.navigate("stats") },
                 onHistoryClick = { navController.navigate("history") },
+                onLogoutClick = {
+                    navController.navigate("welcome") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
                 authViewModel = authViewModel,
                 aiViewModel = aiViewModel
             )
