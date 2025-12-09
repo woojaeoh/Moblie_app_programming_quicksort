@@ -84,7 +84,7 @@ class AiViewModel : ViewModel() {
                 val aiResponse = RetrofitClient.api.predict(aiRequest)
 
                 if (!aiResponse.isSuccessful || aiResponse.body() == null) {
-                    _errorMessage.value = "AI 분석 실패: ${aiResponse.code()}"
+                    _errorMessage.value = "다시 시도해주세요!"
                     // 실패 시 업로드한 이미지 삭제
                     storageRepo.deleteImage(imageUrl)
                     onResult(null)
@@ -127,7 +127,7 @@ class AiViewModel : ViewModel() {
 
             } catch (e: Exception) {
                 Log.e("RECYCLING", "분석 실패", e)
-                _errorMessage.value = "분석 실패: ${e.message}"
+                _errorMessage.value = "다시 시도해주세요!"
                 onResult(null)
             } finally {
                 _isLoading.value = false

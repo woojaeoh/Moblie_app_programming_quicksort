@@ -104,7 +104,7 @@ fun AppNavHost(navController: androidx.navigation.NavHostController) {
                                 popUpTo("camera") { inclusive = true }
                             }
                         } else {
-                            Toast.makeText(context, "분석 실패", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "다시 시도해주세요!", Toast.LENGTH_SHORT).show()
                         }
                     }
                 },
