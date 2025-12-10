@@ -43,7 +43,6 @@ fun HomeScreen(
 
     val currentUser by authViewModel.currentUser.collectAsState()
 
-    // 사용자 정보 로드
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
             aiViewModel.getUserInfo(user.uid) { userProfile ->
@@ -58,7 +57,7 @@ fun HomeScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // 1층 → 화면 상단 큰 영역 (가중치 6)
+            // 1층
             Box(
                 modifier = Modifier
                     .weight(4.5f)
@@ -66,7 +65,7 @@ fun HomeScreen(
                     .background(Color(0xFFBCDFAC))
             )
 
-            // 2층 → 중간 레이어 (가중치 3)
+            // 2층
             Box(
                 modifier = Modifier
                     .weight(4.7f)
@@ -74,7 +73,7 @@ fun HomeScreen(
                     .background(Color(0xFFE6E9D3))
             )
 
-            // 3층 → 맨 아래 얇은 레이어 (가중치 1)
+            // 3층
             Box(
                 modifier = Modifier
                     .weight(0.8f)
@@ -83,8 +82,7 @@ fun HomeScreen(
             )
         }
 
-
-        // ④ 배경 이미지 - CO2에 따라 나무 성장!
+        // 나무 이미지
         val treeResource = when {
             CO2 < 2.0 -> R.drawable.tree1
             CO2 < 4.0 -> R.drawable.tree2
@@ -102,13 +100,15 @@ fun HomeScreen(
                 .offset(y = (-30).dp)
         )
 
-        // ⑤ 실제 UI 콘텐츠
+
+        // ------ 상단 UI ------
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = 24.dp)
         ) {
-            // 로고와 로그아웃 버튼
+
+            // 로고 + 로그아웃
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -139,8 +139,7 @@ fun HomeScreen(
                 }
             }
 
-
-            // 상단 텍스트
+            // 텍스트 정보
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,9 +157,7 @@ fun HomeScreen(
 
                 Text(
                     text = "지금까지 ${userName}님이 절감한 CO₂는",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 20.sp,
-                    )
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp)
                 )
                 Text(
                     text = buildAnnotatedString {
@@ -169,16 +166,13 @@ fun HomeScreen(
                         }
                         append("kg 이에요.")
                     },
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 24.sp
-                    )
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 24.sp)
                 )
-
             }
 
-            Spacer(modifier = Modifier.height(42.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // 메뉴 카드 2개
+            // ---- 내 기록 / 내 통계 ----
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -187,10 +181,10 @@ fun HomeScreen(
             ) {
 
                 HomeMenuCard(
-                    icon = Icons.Default.CameraAlt,
-                    title = "촬영하기",
-                    subtitle = "이미지 인식으로 분리수거\n방법을 알려 드려요.",
-                    onClick = onCameraClick
+                    icon = Icons.Default.History,
+                    title = "내 기록",
+                    subtitle = "저장한 분리수거 사진을\n확인하세요.",
+                    onClick = onHistoryClick
                 )
 
                 HomeMenuCard(
@@ -201,29 +195,26 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 히스토리 메뉴 카드
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                HomeMenuCard(
-                    icon = Icons.Default.History,
-                    title = "내 기록",
-                    subtitle = "저장한 분리수거 사진을\n확인하세요.",
-                    onClick = onHistoryClick
-                )
-            }
-
             Spacer(modifier = Modifier.weight(1f))
+        }
+
+        // FloatingActionButton
+        FloatingActionButton(
+            onClick = onCameraClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            containerColor = Color(0xFFBCDFAC),
+            contentColor = Color.White
+        ) {
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "촬영하기",
+                modifier = Modifier.size(28.dp)
+            )
         }
     }
 }
-
-
 
 @Composable
 fun HomeMenuCard(
@@ -265,7 +256,4 @@ fun HomeMenuCard(
         }
     }
 }
-
-
-
 
