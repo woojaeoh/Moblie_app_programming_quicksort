@@ -300,29 +300,25 @@ def classify_class(image_info: str):
         for kw in WASTE_CLASSES[cls]["keywords"]:
             if kw in info_low:
                 return cls
-    return "class 분류 불가"
+    return "일반쓰레기"
 
 
 def classify_details(cls: str, image_info: str):
     if cls not in WASTE_CLASSES:
-        return "detail 분류 불가"
+        return "기타"
 
     info_low = image_info.lower()
     detail_items = WASTE_CLASSES[cls]["details"]
 
-    sorted_details = sorted(
-        detail_items.items(),
-        key=lambda x: int(x[1].split('.')[0])
-    )
-
-    for kw, detail in sorted_details:
+    for kw, detail in detail_items.items():
         if kw and kw in info_low:
             return detail
 
     return "기타"
 
 
-def classify_image(image_url):
+
+def classify_image(image_url, stream= True, timeout=10): #10초 타임아웃
     image = Image.open(requests.get(image_url, stream=True).raw)
     image_info = ai_model(image)[0]["generated_text"]
 
@@ -330,13 +326,12 @@ def classify_image(image_url):
     detail = classify_details(cls, image_info)
 
     return {
-        "status": " ",
         "category": cls,
         "detail": detail
     }
 
+# 테스트 코드
+# image_url = "https://lottemartzetta.com/images-v3/932dcbc7-fca8-4d43-bcde-f73d1ce3cc7d/f518b743-9ea2-4358-ad18-379bed490ab7/500x500.jpg"
+# output = classify_image(image_url)
 
-image_url = "https://lottemartzetta.com/images-v3/932dcbc7-fca8-4d43-bcde-f73d1ce3cc7d/f518b743-9ea2-4358-ad18-379bed490ab7/500x500.jpg"
-output = classify_image(image_url)
-
-print(json.dumps(output, ensure_ascii=False, indent=2))
+# print(json.dumps(output, ensure_ascii=False, indent=2))
