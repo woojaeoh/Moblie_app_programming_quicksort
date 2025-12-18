@@ -57,3 +57,9 @@ QuickSort는 AI 이미지 분석을 통해 쓰레기를 자동으로 분류하�
 ---
 
 **상세 API 문서**: [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+
+
+### APK파일
+'''v1.0 release 파일에 있습니다!
+
+'''
